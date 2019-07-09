@@ -1,5 +1,17 @@
 package org.ironworkschurch.tithely
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.core.JsonProcessingException
+import java.io.IOException
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import java.math.BigDecimal
+import java.math.RoundingMode
+import java.time.*
+
 data class OrganizationResponse(
   val status: String,
   val type: String,
@@ -12,63 +24,73 @@ data class ChargeListResponse(
   val data: List<Charge>
 )
 
-data class Organization(
-  val organization_id: String,
-  val widget_id: String,
+data class TithelyAccountResponse(
+  val status: String,
   val account_id: String,
-  val created_date: String,
-  val name: String,
-  val phone_number: String,
-  val website: String,
-  val address: Address,
-  val giving_types: List<String>,
-  val giving_types_full: List<GivingType>,
-  val bank: Bank,
-  val legal: LegalInfo
+  val type: String,
+  @JsonProperty("object") val account: TithelyAccount)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class TithelyAccount(
+  @JsonProperty("email") val email: String,
+  @JsonProperty("first_name") val firstName: String,
+  @JsonProperty("last_name") val lastName: String,
+  @JsonProperty("phone_number") val phoneNumber: String,
+  @JsonProperty("created_date") val createdDate: String
 )
 
-data class Address (
-  val street_address: String,
-  val city: String,
-  val state: String,
-  val postal: String,
-  val country: String
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class Organization(
+  @JsonProperty("organization_id") val organizationId: String,
+  val name: String
 )
 
-data class GivingType (
-  val id: String,
-  val name: String,
-  val status: String
-)
-
-data class Bank (
-  val account_number_last4: String,
-  val name: String,
-  val country: String,
-  val currency: String
-)
-
-data class LegalInfo (
-  val entity_type: String,
-  val first_name: String?,
-  val last_name: String?,
-  val date_of_birth: String?
-)
-
+@JsonDeserialize(using = ChargeDeserializer::class)
 data class Charge (
-  val charge_id: String,
-  val charge_status: String,
-  val amount: String,
-  val net_amount: String,
-  val fees: String,
+  val chargeId: String,
+  val amount: BigDecimal,
   val currency: String,
-  val giving_type: String,
-  val charge_date: String,
-  val deposit_date: String,
-  val payment_method: String?,
-  val organization: String,
-  val donor_account: String,
-  val donor_email: String?,
-  val donor_first_name: String?,
-  val donor_last_name: String?
+  val givingType: String,
+  val depositDate: LocalDate?,
+  val depositPending: Boolean,
+  val donorAccount: String,
+  val donorEmail: String?
 )
+
+internal class ChargeDeserializer : JsonDeserializer<Charge>() {
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  data class ChargeRaw (
+    @JsonProperty("charge_id") val chargeId: String,
+    @JsonProperty("amount") val amount: Long,
+    @JsonProperty("currency") val currency: String,
+    @JsonProperty("giving_type") val givingType: String,
+    @JsonProperty("deposit_date") val depositDate: String,
+    @JsonProperty("donor_account") val donorAccount: String,
+    @JsonProperty("donor_email") val donorEmail: String?
+  )
+
+  @Throws(IOException::class, JsonProcessingException::class)
+  override fun deserialize(jp: JsonParser, ctxt: DeserializationContext): Charge {
+    val root = jp.readValueAs(ChargeRaw::class.java)
+
+    return Charge (
+      chargeId = root.chargeId,
+      amount = root.amount.toBigDecimal().movePointLeft(2),
+      currency = root.currency,
+      givingType = root.givingType,
+      depositDate = root.depositDate.toLongOrNull()?.toLocalDate(),
+      depositPending = root.depositDate == "pending",
+      donorAccount = root.donorAccount,
+      donorEmail = root.donorEmail
+    )
+  }
+
+  companion object {
+    fun Long.toLocalDate(): LocalDate {
+      val ofEpochSecond = LocalDateTime.ofEpochSecond(this, 0, ZoneOffset.UTC)
+
+      val zoneOffset = ZoneId.of("America/New_York").rules.getOffset(ofEpochSecond)
+      return ofEpochSecond.plusSeconds(zoneOffset.totalSeconds.toLong()).toLocalDate()
+    }
+  }
+}

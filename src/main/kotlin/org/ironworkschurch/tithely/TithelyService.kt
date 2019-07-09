@@ -3,7 +3,8 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import khttp.get
 import khttp.structures.authorization.BasicAuthorization
-import java.util.*
+import java.util.Calendar
+import java.util.Date
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
 class TithelyService(
@@ -17,14 +18,12 @@ class TithelyService(
 
   fun getDepositedCharges(): Sequence<Charge> {
     return getCharges()
-      .filter {
-        it.deposit_date != "pending"
-      }
+      .filter { !it.depositPending }
   }
 
   private fun getCharges(): Sequence<Charge> {
     val activeOrganization = getActiveOrganization()
-    return getCharges(activeOrganization.organization_id)
+    return getCharges(activeOrganization.organizationId)
   }
 
   private fun getActiveOrganization(): Organization {
@@ -52,7 +51,7 @@ class TithelyService(
           created_after = createdAfterTimestamp
         )
         yieldAll(charges)
-        lastChargeId = charges.map { it.charge_id }.lastOrNull()
+        lastChargeId = charges.map { it.chargeId }.lastOrNull()
       } while (lastChargeId != null)
     }
   }
@@ -60,7 +59,7 @@ class TithelyService(
   private fun getCreatedAfterTimestamp(): String {
     return MILLISECONDS.toSeconds(Calendar.getInstance().apply {
       time = Date()
-      add(Calendar.MONTH, -1)
+      add(Calendar.WEEK_OF_YEAR, -4)
     }.timeInMillis).toString()
   }
 
@@ -82,5 +81,13 @@ class TithelyService(
 
     val chargeListResponse: ChargeListResponse = objectMapper.readValue(response.text)
     return chargeListResponse.data
+  }
+
+  fun getAccount(donorId: String): TithelyAccount {
+    val resource = "accounts/$donorId"
+    val url = baseUrl + resource
+    val response = get(url, auth = credentials)
+    val accountResponse: TithelyAccountResponse = objectMapper.readValue(response.text)
+    return accountResponse.account
   }
 }
