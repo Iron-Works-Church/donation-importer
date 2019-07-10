@@ -26,6 +26,14 @@ class TithelyService(
     return getCharges(activeOrganization.organizationId)
   }
 
+  fun getChargePaymentType(chargeId: String): String? {
+    val resource = "charges/$chargeId"
+    val url = baseUrl + resource
+    val response = get(url, auth = credentials)
+    val responseTree = objectMapper.readTree(response.text)
+    return responseTree.at("/object/payment_method/pm_type").textValue()
+  }
+
   private fun getActiveOrganization(): Organization {
     return getOrganizations()
       .single { it.name == organizationName }

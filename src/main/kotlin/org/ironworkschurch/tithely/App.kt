@@ -25,7 +25,13 @@ fun main(args: Array<String>) {
   val simpleChurchServiceFactory = buildSimpleChurchServiceFactory()
   val donorLookup = DonorLookup(tithelyService, simpleChurchServiceFactory)
   val givingCategoryLookup = GivingCategoryLookup(simpleChurchServiceFactory)
-  val transactionResolver = TransactionResolver(simpleChurchServiceFactory, donorLookup, categoryMappings, givingCategoryLookup)
+  val transactionResolver = TransactionResolver(
+    simpleChurchServiceFactory,
+    donorLookup,
+    categoryMappings,
+    givingCategoryLookup,
+    tithelyService
+  )
 
   App(tithelyService, transactionResolver, SimpleChurchDonationImporter(simpleChurchServiceFactory)).run()
 }

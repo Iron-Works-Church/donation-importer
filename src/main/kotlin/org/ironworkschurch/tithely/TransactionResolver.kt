@@ -7,7 +7,8 @@ class TransactionResolver (
   private val simpleChurchServiceFactory: SimpleChurchServiceFactory,
   private val donorLookup: DonorLookup,
   private val givingCategories: Map<String, String>,
-  private val givingCategoryLookup: GivingCategoryLookup
+  private val givingCategoryLookup: GivingCategoryLookup,
+  private val tithelyService: TithelyService
 ) {
   internal fun resolveImportedDonations(depositedCharges: Sequence<Charge>): List<Donation> {
     val transactionsInRange = getTransactionsInRange(depositedCharges)
@@ -21,8 +22,10 @@ class TransactionResolver (
       }
 
     return depositedCharges
-      .mapNotNull { it.toDonation() }
-      .filterNot { isImported(it, transactionsInRange) }.toList()
+      .mapNotNull { it.toDonationLookup() }
+      .filterNot { isImported(it, transactionsInRange) }
+      .map { it.toDonation() }
+      .toList()
   }
 
   private fun getTransactionsInRange(depositedCharges: Sequence<Charge>): List<SimpleChurchBatchItem> {
@@ -42,13 +45,13 @@ class TransactionResolver (
     val givingCategory: String
   )
 
-  private fun isImported(donation: Donation, transactionsInRange: Map<TransactionLookupKey, SimpleChurchBatchItem>): Boolean {
+  private fun isImported(donation: DonationLookup, transactionsInRange: Map<TransactionLookupKey, SimpleChurchBatchItem>): Boolean {
     val lookupKey = donation.toLookupKey()
 
     return transactionsInRange.containsKey(lookupKey)
   }
 
-  private fun Donation.toLookupKey(): TransactionLookupKey {
+  private fun DonationLookup.toLookupKey(): TransactionLookupKey {
     return TransactionLookupKey(
       date = date,
       amount = amount,
@@ -57,11 +60,11 @@ class TransactionResolver (
     )
   }
 
-  private fun Charge.toDonation(): Donation? {
+  private fun Charge.toDonationLookup(): DonationLookup? {
     val simpleChurchId = donorLookup.getSimpleChurchIdByTithelyDonorId(donorAccount) ?: return null
 
     val givingCategoryName = givingCategories[givingType] ?: givingType
-    return Donation(
+    return DonationLookup(
       date = depositDate!!,
       amount = amount.setScale(2),
       simpleChurchId = simpleChurchId,
@@ -71,10 +74,31 @@ class TransactionResolver (
     )
   }
 
+  private fun DonationLookup.toDonation(): Donation {
+    return Donation(
+      simpleChurchId = simpleChurchId,
+      amount = amount,
+      date = date,
+      givingCategoryId = givingCategoryId,
+      givingCategoryName = givingCategoryName,
+      transactionId = transactionId,
+      paymentMethod = tithelyService.getChargePaymentType(transactionId)
+    )
+  }
+
   private fun lookupGivingCategoryId(givingCategoryName: String): Int {
     return givingCategoryLookup.lookupGivingCategoryId(givingCategoryName)
   }
 }
+
+data class DonationLookup(
+  val simpleChurchId: Int,
+  val amount: BigDecimal,
+  val date: LocalDate,
+  val givingCategoryId: Int,
+  val givingCategoryName: String,
+  val transactionId: String
+)
 
 data class Donation(
   val simpleChurchId: Int,
@@ -82,7 +106,6 @@ data class Donation(
   val date: LocalDate,
   val givingCategoryId: Int,
   val givingCategoryName: String,
-  val transactionId: String
-) {
-
-}
+  val transactionId: String,
+  val paymentMethod: String?
+)

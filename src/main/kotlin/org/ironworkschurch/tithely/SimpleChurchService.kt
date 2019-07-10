@@ -122,7 +122,7 @@ class SimpleChurchService (
         "amount" to donation.amount.toString(),
         "date" to donation.date.format(DateTimeFormatter.ISO_LOCAL_DATE),
         "categoryId" to donation.givingCategoryId,
-        "method" to "imported",
+        "method" to "import",
         "transactionId" to donation.transactionId
       )
     )
