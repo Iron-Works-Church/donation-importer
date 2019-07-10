@@ -31,13 +31,6 @@ data class TithelyAccountResponse(
   val type: String,
   @JsonProperty("object") val account: TithelyAccount)
 
-data class TithelyChargeResponse(
-  val status: String,
-  val type: String,
-  @JsonProperty("charge_id") val chargeId: String,
-  @JsonProperty("object") val charge: Object
-)
-
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class TithelyAccount(
   @JsonProperty("email") val email: String,
