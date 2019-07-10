@@ -3,70 +3,20 @@ package org.ironworkschurch.tithely
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import java.math.BigDecimal
-import java.time.LocalDate
-import java.util.*
+import java.util.Properties
 
 class App(
-  val tithelyService: TithelyService,
-  val simpleChurchServiceFactory: SimpleChurchServiceFactory,
-  val donorLookup: DonorLookup,
-  val givingCategories: Map<String, String>)
+  private val tithelyService: TithelyService,
+  private val transactionResolver: TransactionResolver,
+  private val simpleChurchDonationImporter: SimpleChurchDonationImporter
+)
 {
   fun run() {
     val depositedCharges = tithelyService.getDepositedCharges()
-      //.filter { it.chargeId == "ch_HYPFilaZWCy_23001531" } // FIXME Remove this filter
-    val newDonations = removeImportedDonations(depositedCharges)
-    newDonations.forEach { println(it) }
+    val newDonations = transactionResolver.resolveImportedDonations(depositedCharges)
+    simpleChurchDonationImporter.importDonations(newDonations)
   }
 
-  private fun removeImportedDonations(depositedCharges: Sequence<Charge>): Collection<Charge> {
-    val transactionsInRange = getTransactionsInRange(depositedCharges)
-      .associateBy {
-        TransactionLookupKey (
-          it.date,
-          it.amount.setScale(2),
-          it.person.uid,
-          it.category.name
-        )
-      }
-
-    return depositedCharges.filterNot { isImported(it, transactionsInRange) }.toList()
-  }
-
-  private fun getTransactionsInRange(depositedCharges: Sequence<Charge>): List<SimpleChurchBatchItem> {
-    val simpleChurchService = simpleChurchServiceFactory.login()
-    val earliestDepositDate = depositedCharges.map { it.depositDate!! }.min()
-    return simpleChurchService.getBatches()
-      .filterNot { it.dateReceived.isBefore(earliestDepositDate) }
-      .map { simpleChurchService.getBatch(it) }
-      .flatMap { it.entries }
-  }
-
-
-  data class TransactionLookupKey (
-    val date: LocalDate,
-    val amount: BigDecimal,
-    val donorId: Int,
-    val givingCategory: String
-  )
-
-  private fun isImported(charge: Charge, transactionsInRange: Map<TransactionLookupKey, SimpleChurchBatchItem>): Boolean {
-    val lookupKey = lookupKey(charge) ?: return false
-
-    return transactionsInRange.containsKey(lookupKey)
-  }
-
-  private fun lookupKey(charge: Charge): TransactionLookupKey? {
-    val simpleChurchId = donorLookup.getSimpleChurchIdByTithelyDonorId(charge.donorAccount) ?: return null
-
-    return TransactionLookupKey(
-      date = charge.depositDate!!,
-      amount = charge.amount.setScale(2),
-      donorId = simpleChurchId,
-      givingCategory = givingCategories[charge.givingType] ?: charge.givingType
-    )
-  }
 }
 
 fun main(args: Array<String>) {
@@ -74,8 +24,10 @@ fun main(args: Array<String>) {
   val tithelyService = buildTithelyService()
   val simpleChurchServiceFactory = buildSimpleChurchServiceFactory()
   val donorLookup = DonorLookup(tithelyService, simpleChurchServiceFactory)
+  val givingCategoryLookup = GivingCategoryLookup(simpleChurchServiceFactory)
+  val transactionResolver = TransactionResolver(simpleChurchServiceFactory, donorLookup, categoryMappings, givingCategoryLookup)
 
-  App(tithelyService, simpleChurchServiceFactory, donorLookup, categoryMappings).run()
+  App(tithelyService, transactionResolver, SimpleChurchDonationImporter(simpleChurchServiceFactory)).run()
 }
 
 fun buildSimpleChurchServiceFactory(): SimpleChurchServiceFactory {

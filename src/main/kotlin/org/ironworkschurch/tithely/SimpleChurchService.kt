@@ -13,6 +13,7 @@ import khttp.post
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 
 class SimpleChurchServiceFactory (
@@ -111,6 +112,60 @@ class SimpleChurchService (
     val batchesResponse: SimpleChurchBatchesResponse = objectMapper.readValue(response.text)
     return batchesResponse.data
   }
+
+  fun save(donation: Donation): Int {
+    val response = post(
+      url = baseUrl + "/giving",
+      params = mapOf("session_id" to sessionId),
+      data = mapOf(
+        "uid" to donation.simpleChurchId,
+        "amount" to donation.amount.toString(),
+        "date" to donation.date.format(DateTimeFormatter.ISO_LOCAL_DATE),
+        "categoryId" to donation.givingCategoryId,
+        "method" to "imported",
+        "transactionId" to donation.transactionId
+      )
+    )
+
+    val givingResponse: GivingResponse = objectMapper.readValue(response.text)
+    return givingResponse.data.id
+  }
+
+  fun createBatch(dateReceived: LocalDate,
+                  name: String,
+                  expectedTotal: BigDecimal,
+                  givingIds: List<Int>) {
+
+    val response = post(
+      url = baseUrl + "/giving/batch",
+      params = mapOf("session_id" to sessionId),
+      data = mapOf(
+        "dateReceived" to dateReceived.format(DateTimeFormatter.ISO_LOCAL_DATE),
+        "name" to name,
+        "expectedTotal" to expectedTotal.toDouble(),
+        "givingIds" to givingIds.joinToString(separator = ",")
+    ))
+
+    check(response.statusCode < 400)
+  }
+
+  fun getGivingCategories(): List<GivingCategory> {
+    val response = get(baseUrl + "/giving/categories", params = mapOf(
+      "session_id" to sessionId
+    ))
+
+    val batchesResponse: GivingCategoriesResponse = objectMapper.readValue(response.text)
+    return batchesResponse.data
+  }
+
+  data class GivingResponse(
+    val success: Boolean,
+    val statusCode: Int,
+    val data: GivingId
+  )
+
+  data class GivingId(val id: Int)
+
 }
 
 data class SimpleChurchPeopleSearchResponse(
@@ -149,28 +204,6 @@ data class SimpleChurchFamilyMember(
   val relationship: String
 )
 
-data class SimpleChurchTransaction(
-  val id: Long,
-  val uid: Int,
-  val amount: String,
-  val date: String,
-  val time: String,
-  val method: String,
-  val transactionId: String,
-  val subscriptionId: String,
-  val fee: String,
-  val note: String,
-  val checkId: String,
-  val batchId: String,
-  val pledgeId: String,
-  val checkNumber: String,
-  val oldNote: String,
-  val sfoSynced: String,
-  val qboSynced: String,
-  val cnSynced: String,
-  val category: String
-)
-
 data class SimpleChurchBatchesResponse (
   val success: Boolean,
   val statusCode: Int,
@@ -181,6 +214,12 @@ data class SimpleChurchBatchResponse (
   val success: Boolean,
   val statusCode: Int,
   val data: SimpleChurchBatch
+)
+
+data class GivingCategoriesResponse (
+  val success: Boolean,
+  val statusCode: Int,
+  val data: List<GivingCategory>
 )
 
 @JsonDeserialize(using = SimpleChurchBatchDeserializer::class)
@@ -272,6 +311,7 @@ data class SimpleChurchBatchItemRaw(
   }
 }
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class GivingCategory(
   val id: Int,
   val name: String
