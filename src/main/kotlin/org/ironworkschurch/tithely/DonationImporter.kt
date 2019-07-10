@@ -26,13 +26,14 @@ class DonationImporter : RequestHandler<DonationImporter.Request, DonationImport
   }
 
   override fun handleRequest(input: Request?, context: Context?): Response {
-    application.run()
-    return Response()
+    val importReport = application.run()
+    context?.logger?.log("Imported ${importReport.transactions} transactions in ${importReport.batches} batches")
+    return Response(importReport)
   }
 
   class Request
 
-  class Response
+  data class Response(val importReport: SimpleChurchDonationImporter.ImportReport)
 }
 
 fun buildSimpleChurchServiceFactory(): SimpleChurchServiceFactory {

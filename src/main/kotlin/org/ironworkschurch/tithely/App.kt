@@ -11,10 +11,10 @@ class App(
   private val simpleChurchDonationImporter: SimpleChurchDonationImporter
 )
 {
-  fun run() {
+  fun run(): SimpleChurchDonationImporter.ImportReport {
     val depositedCharges = tithelyService.getDepositedCharges()
     val newDonations = transactionResolver.resolveImportedDonations(depositedCharges)
-    simpleChurchDonationImporter.importDonations(newDonations)
+    return simpleChurchDonationImporter.importDonations(newDonations)
   }
 
 }

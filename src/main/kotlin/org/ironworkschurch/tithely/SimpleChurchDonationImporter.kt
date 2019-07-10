@@ -6,12 +6,19 @@ import java.time.format.DateTimeFormatter
 
 class SimpleChurchDonationImporter(
   private val simpleChurchServiceFactory: SimpleChurchServiceFactory) {
-  fun importDonations(newDonations: Collection<Donation>) {
+  fun importDonations(newDonations: Collection<Donation>): ImportReport {
     val chargesByBatch = newDonations.groupBy { BatchKey(it.date, it.paymentMethod) }
     for ((batchKey, donations) in chargesByBatch) {
       donations.toBatchRequest(batchKey.date, batchKey.paymentMethod)
     }
+
+    return ImportReport(chargesByBatch.size, newDonations.size)
   }
+
+  data class ImportReport(
+    val batches: Int,
+    val transactions: Int
+  )
 
   private data class BatchKey(val date: LocalDate, val paymentMethod: String?)
 
