@@ -4,6 +4,7 @@
 # Ignore build output directory
 /build
 /out
+/sam-packaged.yaml
 
 # Ignore IntelliJ files
 /.idea

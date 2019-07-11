@@ -1,0 +1,2 @@
+sam package --template-file template.yml --s3-bucket org.ironworkschurch.donationimporter --output-template-file sam-packaged.yaml
+sam deploy --template-file ./sam-packaged.yaml --stack-name donationimporter --capabilities CAPABILITY_IAM

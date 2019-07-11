@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  DonationImporter:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: build/distributions/tithely.zip
+      Handler: org.ironworkschurch.tithely.DonationImporter::handleRequest
+      Runtime: java8
+      MemorySize: 320
+      Timeout: 90
+      Events:
+        DonationImporterSchedule:
+          Type: Schedule
+          Properties:
+            Schedule: 'rate(7 days)'
