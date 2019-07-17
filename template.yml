@@ -13,4 +13,4 @@ Resources:
         DonationImporterSchedule:
           Type: Schedule
           Properties:
-            Schedule: 'rate(7 days)'
+            Schedule: 'cron(0 6 ? * TUE *)'
