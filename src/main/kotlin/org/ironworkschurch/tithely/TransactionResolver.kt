@@ -82,7 +82,7 @@ class TransactionResolver (
       givingCategoryId = givingCategoryId,
       givingCategoryName = givingCategoryName,
       transactionId = transactionId,
-      paymentMethod = tithelyService.getChargePaymentType(transactionId)
+      paymentMethod = tithelyService.getChargePaymentType(transactionId) ?: "unknown"
     )
   }
 
