@@ -16,14 +16,14 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 
-class SimpleChurchServiceFactory (
+open class SimpleChurchServiceFactory (
   private val baseUrl: String,
   private val username: String,
   private val password: String
 ) {
   val objectMapper = jacksonObjectMapper()
 
-  fun login(): SimpleChurchService {
+  open fun login(): SimpleChurchService {
     val response = post(baseUrl + "user/login", params = mapOf(
       "username" to username,
       "password" to password
@@ -60,7 +60,7 @@ class SimpleChurchServiceFactory (
   }
 }
 
-class SimpleChurchService (
+open class SimpleChurchService (
   private val baseUrl: String,
   private val sessionId: String,
   private val objectMapper: ObjectMapper
@@ -149,7 +149,7 @@ class SimpleChurchService (
     check(response.statusCode < 400)
   }
 
-  fun getGivingCategories(): List<GivingCategory> {
+  open fun getGivingCategories(): List<GivingCategory> {
     val response = get(baseUrl + "/giving/categories", params = mapOf(
       "session_id" to sessionId
     ))

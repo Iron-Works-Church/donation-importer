@@ -10,10 +10,12 @@ class GivingCategoryLookup(
   fun lookupGivingCategoryId(givingCategoryName: String): Int {
     if (cache.isEmpty()) {
       val givingCategories: List<GivingCategory> = simpleChurchServiceFactory.login().getGivingCategories()
-      val givingCategoryMap = givingCategories.associate { it.name to it.id }
+      val givingCategoryMap = givingCategories.associate { it.name.normalizeSearchString() to it.id }
       cache.putAll(givingCategoryMap)
     }
 
-    return cache.getValue(givingCategoryName)
+    return cache.getValue(givingCategoryName.normalizeSearchString())
   }
+
+  private fun String.normalizeSearchString() = trim().toLowerCase()
 }
