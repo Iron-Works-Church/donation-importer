@@ -21,7 +21,7 @@ open class SimpleChurchServiceFactory (
   private val username: String,
   private val password: String
 ) {
-  val objectMapper = jacksonObjectMapper()
+  private val objectMapper = jacksonObjectMapper()
 
   open fun login(): SimpleChurchService {
     val response = post(baseUrl + "user/login", params = mapOf(
@@ -105,7 +105,7 @@ open class SimpleChurchService (
   }
 
   fun getBatches(): List<SimpleChurchBatch> {
-    val response = get(baseUrl + "/giving/batches", params = mapOf(
+    val response = get("$baseUrl/giving/batches", params = mapOf(
       "session_id" to sessionId
     ))
 
@@ -115,7 +115,7 @@ open class SimpleChurchService (
 
   fun save(donation: Donation): Int {
     val response = post(
-      url = baseUrl + "/giving",
+      url = "$baseUrl/giving",
       params = mapOf("session_id" to sessionId),
       data = mapOf(
         "uid" to donation.simpleChurchId,
@@ -137,7 +137,7 @@ open class SimpleChurchService (
                   givingIds: List<Int>) {
 
     val response = post(
-      url = baseUrl + "/giving/batch",
+      url = "$baseUrl/giving/batch",
       params = mapOf("session_id" to sessionId),
       data = mapOf(
         "dateReceived" to dateReceived.format(DateTimeFormatter.ISO_LOCAL_DATE),
@@ -150,7 +150,7 @@ open class SimpleChurchService (
   }
 
   open fun getGivingCategories(): List<GivingCategory> {
-    val response = get(baseUrl + "/giving/categories", params = mapOf(
+    val response = get("$baseUrl/giving/categories", params = mapOf(
       "session_id" to sessionId
     ))
 

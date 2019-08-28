@@ -7,6 +7,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.util.*
 
+@Suppress("unused")
 class DonationImporter : RequestHandler<DonationImporter.Request, DonationImporter.Response> {
   private val application: App by lazy {
     val categoryMappings = getCategoryMappings()

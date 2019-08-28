@@ -3,11 +3,11 @@ package org.ironworkschurch.tithely
 import java.util.concurrent.ConcurrentHashMap
 
 class DonorLookup(
-  val tithelyService: TithelyService,
-  val simpleChurchService: SimpleChurchServiceFactory)
+  private val tithelyService: TithelyService,
+  private val simpleChurchService: SimpleChurchServiceFactory)
 {
-  val cacheByDonorId: ConcurrentHashMap<String, Int?> = ConcurrentHashMap()
-  val cacheByEmail: ConcurrentHashMap<String, Int?> = ConcurrentHashMap()
+  private val cacheByDonorId: ConcurrentHashMap<String, Int?> = ConcurrentHashMap()
+  private val cacheByEmail: ConcurrentHashMap<String, Int?> = ConcurrentHashMap()
 
   fun getSimpleChurchIdByTithelyDonorId(donorId: String): Int? {
     return cacheByDonorId.computeIfAbsent(donorId) {
@@ -20,7 +20,7 @@ class DonorLookup(
     return simpleChurchService.getGiverIdByName(accountInfo.firstName, accountInfo.lastName)
   }
 
-  fun getSimpleChurchIdByEmail(email: String): Int? {
+  private fun getSimpleChurchIdByEmail(email: String): Int? {
     return cacheByEmail.computeIfAbsent(email) {
       simpleChurchService.getGiverIdByEmail(email)
     }
