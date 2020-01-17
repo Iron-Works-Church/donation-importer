@@ -45,7 +45,12 @@ class TransactionResolver (
     val givingCategory: String
   )
 
-  private fun isImported(donation: DonationLookup, transactionsInRange: Map<TransactionLookupKey, SimpleChurchBatchItem>): Boolean {
+  private fun isImported(donation: DonationLookup,
+                         transactionsInRange: Map<TransactionLookupKey, SimpleChurchBatchItem>): Boolean {
+    if (donation.simpleChurchId == null) {
+      return false;
+    }
+
     val lookupKey = donation.toLookupKey()
 
     return transactionsInRange.containsKey(lookupKey)
@@ -55,13 +60,13 @@ class TransactionResolver (
     return TransactionLookupKey(
       date = date,
       amount = amount,
-      donorId = simpleChurchId,
+      donorId = simpleChurchId!!,
       givingCategory = givingCategoryName
     )
   }
 
   private fun Charge.toDonationLookup(): DonationLookup? {
-    val simpleChurchId = donorLookup.getSimpleChurchIdByTithelyDonorId(donorAccount) ?: return null
+    val simpleChurchId = donorLookup.getSimpleChurchIdByTithelyDonorId(donorAccount)
 
     val givingCategoryName = givingCategories[givingType] ?: givingType
     return DonationLookup(
@@ -92,7 +97,7 @@ class TransactionResolver (
 }
 
 data class DonationLookup(
-  val simpleChurchId: Int,
+  val simpleChurchId: Int?,
   val amount: BigDecimal,
   val date: LocalDate,
   val givingCategoryId: Int,
@@ -101,7 +106,7 @@ data class DonationLookup(
 )
 
 data class Donation(
-  val simpleChurchId: Int,
+  val simpleChurchId: Int?,
   val amount: BigDecimal,
   val date: LocalDate,
   val givingCategoryId: Int,

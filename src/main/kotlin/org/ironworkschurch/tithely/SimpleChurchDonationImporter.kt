@@ -9,7 +9,8 @@ class SimpleChurchDonationImporter(
   fun importDonations(newDonations: Collection<Donation>): ImportReport {
     val chargesByBatch = newDonations.groupBy { BatchKey(it.date, it.paymentMethod) }
     for ((batchKey, donations) in chargesByBatch) {
-      donations.toBatchRequest(batchKey.date, batchKey.paymentMethod)
+      donations
+        .toBatchRequest(batchKey.date, batchKey.paymentMethod)
     }
 
     return ImportReport(chargesByBatch.size, newDonations.size)
@@ -24,7 +25,9 @@ class SimpleChurchDonationImporter(
 
   private fun List<Donation>.toBatchRequest(donationDate: LocalDate, paymentMethod: String?) {
     val simpleChurchService = simpleChurchServiceFactory.login()
-    val givingIds = this.map { simpleChurchService.save(it) }
+    val givingIds = this
+      .filter { it.simpleChurchId != null }
+      .map { simpleChurchService.save(it) }
     simpleChurchService.createBatch(
       dateReceived = donationDate,
       name = getBatchTitle(donationDate, paymentMethod),

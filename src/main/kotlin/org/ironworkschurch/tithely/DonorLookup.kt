@@ -12,8 +12,14 @@ class DonorLookup(
   fun getSimpleChurchIdByTithelyDonorId(donorId: String): Int? {
     return cacheByDonorId.computeIfAbsent(donorId) {
       val accountInfo = tithelyService.getAccount(donorId)
-      getSimpleChurchIdByEmail(accountInfo.email) ?: getSimpleChurchIdByName(accountInfo)
+      getSimpleChurchIdByEmail(accountInfo.email)
+        ?: getSimpleChurchIdByName(accountInfo)
+        ?: alertIfNoSimpleChurchMatch(accountInfo)
     }
+  }
+
+  private fun alertIfNoSimpleChurchMatch(accountInfo: TithelyAccount): Int? {
+    return null;
   }
 
   private fun getSimpleChurchIdByName(accountInfo: TithelyAccount): Int? {
