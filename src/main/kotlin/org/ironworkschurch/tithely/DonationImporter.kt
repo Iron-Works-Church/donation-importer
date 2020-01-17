@@ -13,7 +13,8 @@ class DonationImporter : RequestHandler<DonationImporter.Request, DonationImport
     val categoryMappings = getCategoryMappings()
     val tithelyService = buildTithelyService()
     val simpleChurchServiceFactory = buildSimpleChurchServiceFactory()
-    val donorLookup = DonorLookup(tithelyService, simpleChurchServiceFactory)
+    val amazonProperties = getAmazonProperties()
+    val donorLookup = DonorLookup(tithelyService, simpleChurchServiceFactory, amazonProperties.snsTopicArn)
     val givingCategoryLookup = GivingCategoryLookup(simpleChurchServiceFactory)
     val transactionResolver = TransactionResolver(
       simpleChurchServiceFactory,
@@ -68,6 +69,13 @@ private fun getTithelyProperties(): TithelyProperties {
   )
 }
 
+private fun getAmazonProperties(): AmazonProperties {
+  val properties = getProperties()
+  return AmazonProperties(
+    snsTopicArn = properties.getProperty("sns.topicArn")
+  )
+}
+
 data class TithelyProperties (
   val baseUrl: String,
   val userName: String,
@@ -79,6 +87,10 @@ data class SimpleChurchProperties (
   val baseUrl: String,
   val userName: String,
   val password: String
+)
+
+data class AmazonProperties(
+  val snsTopicArn: String
 )
 
 private fun getProperties(): Properties {

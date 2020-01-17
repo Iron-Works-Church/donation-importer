@@ -13,6 +13,7 @@ dependencies {
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.9")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.9")
   implementation("com.amazonaws:aws-lambda-java-core:1.2.0")
+  implementation("com.amazonaws:aws-java-sdk-sns:1.11.708")
 
   testImplementation("org.jetbrains.kotlin:kotlin-test")
   testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
