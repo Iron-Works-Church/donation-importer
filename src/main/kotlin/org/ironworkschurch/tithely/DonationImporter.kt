@@ -24,7 +24,10 @@ class DonationImporter : RequestHandler<DonationImporter.Request, DonationImport
       tithelyService
     )
 
-    App(tithelyService, transactionResolver, SimpleChurchDonationImporter(simpleChurchServiceFactory))
+    App(
+      tithelyService,
+      transactionResolver,
+      SimpleChurchDonationImporter(simpleChurchServiceFactory, amazonProperties.snsTopicArn))
   }
 
   override fun handleRequest(input: Request?, context: Context?): Response {
