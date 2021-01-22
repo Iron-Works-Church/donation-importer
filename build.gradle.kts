@@ -1,5 +1,5 @@
 plugins {
-  id("org.jetbrains.kotlin.jvm").version("1.3.20")
+  id("org.jetbrains.kotlin.jvm") version "1.4.21"
 }
 
 repositories {
@@ -18,6 +18,16 @@ dependencies {
   testImplementation("org.jetbrains.kotlin:kotlin-test")
   testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
   testImplementation("org.assertj:assertj-core:3.12.2")
+}
+
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(8))
+  }
+}
+
+tasks.named<Wrapper>("wrapper") {
+  gradleVersion = "6.8"
 }
 
 tasks {

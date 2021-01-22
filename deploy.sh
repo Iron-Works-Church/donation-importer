@@ -1,2 +1,2 @@
-sam package --template-file template.yml --s3-bucket org.ironworkschurch.donationimporter --output-template-file sam-packaged.yaml
-sam deploy --template-file ./sam-packaged.yaml --stack-name donationimporter --capabilities CAPABILITY_IAM
+sam package --profile iwc --template-file template.yml --s3-bucket org.ironworkschurch.donationimporter --output-template-file sam-packaged.yaml
+sam deploy --profile iwc --template-file ./sam-packaged.yaml --stack-name donationimporter --capabilities CAPABILITY_IAM --region us-east-1
