@@ -27,7 +27,7 @@ class SimpleChurchDonationImporter(
   */
   private fun Donation.isEndOfYearDonation() : Boolean {
     return (date.month == Month.DECEMBER && date.dayOfMonth >= 20) ||
-            (date.month == Month.JANUARY && date.dayOfMonth <= 15)
+            (date.month == Month.JANUARY && date.dayOfMonth <= 20)
   }
 
   data class ImportReport(

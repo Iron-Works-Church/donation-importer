@@ -13,4 +13,4 @@ Resources:
         DonationImporterSchedule:
           Type: Schedule
           Properties:
-            Schedule: 'cron(0 6 ? * TUE *)'
+            Schedule: 'cron(0 6 ? * MON *)'
