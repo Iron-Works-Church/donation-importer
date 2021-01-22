@@ -6,8 +6,8 @@ import java.util.concurrent.ConcurrentHashMap
 class DonorLookup(
   private val tithelyService: TithelyService,
   private val simpleChurchService: SimpleChurchServiceFactory,
-  private val snsTopicArn: String)
-{
+  private val snsTopicArn: String
+) {
   private val cacheByDonorId: ConcurrentHashMap<String, Int?> = ConcurrentHashMap()
   private val cacheByEmail: ConcurrentHashMap<String, Int?> = ConcurrentHashMap()
 

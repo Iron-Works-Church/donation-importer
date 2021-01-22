@@ -15,8 +15,7 @@ import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-
-open class SimpleChurchServiceFactory (
+open class SimpleChurchServiceFactory(
   private val baseUrl: String,
   private val username: String,
   private val password: String
@@ -60,7 +59,7 @@ open class SimpleChurchServiceFactory (
   }
 }
 
-open class SimpleChurchService (
+open class SimpleChurchService(
   private val baseUrl: String,
   private val sessionId: String,
   private val objectMapper: ObjectMapper
@@ -144,7 +143,7 @@ open class SimpleChurchService (
         "name" to name,
         "expectedTotal" to expectedTotal.toDouble(),
         "givingIds" to givingIds.joinToString(separator = ",")
-    ))
+      ))
 
     check(response.statusCode < 400)
   }
@@ -204,26 +203,26 @@ data class SimpleChurchFamilyMember(
   val relationship: String
 )
 
-data class SimpleChurchBatchesResponse (
+data class SimpleChurchBatchesResponse(
   val success: Boolean,
   val statusCode: Int,
   val data: List<SimpleChurchBatch>
 )
 
-data class SimpleChurchBatchResponse (
+data class SimpleChurchBatchResponse(
   val success: Boolean,
   val statusCode: Int,
   val data: SimpleChurchBatch
 )
 
-data class GivingCategoriesResponse (
+data class GivingCategoriesResponse(
   val success: Boolean,
   val statusCode: Int,
   val data: List<GivingCategory>
 )
 
 @JsonDeserialize(using = SimpleChurchBatchDeserializer::class)
-data class SimpleChurchBatch (
+data class SimpleChurchBatch(
   val id: Int,
   val created: Long,
   val updated: Long,
@@ -243,7 +242,7 @@ data class SimpleChurchBatch (
 
 class SimpleChurchBatchDeserializer : JsonDeserializer<SimpleChurchBatch>() {
   @JsonIgnoreProperties(ignoreUnknown = true)
-  data class SimpleChurchBatchRaw (
+  data class SimpleChurchBatchRaw(
     val id: Int,
     val created: Long,
     val updated: Long,
@@ -288,15 +287,16 @@ data class SimpleChurchBatchItem(
 )
 
 class SimpleChurchBatchItemDeserializer : JsonDeserializer<SimpleChurchBatchItem>() {
-data class SimpleChurchBatchItemRaw(
-  val amount: BigDecimal,
-  val date: String,
-  val id: String,
-  val created: String,
-  val updated: String,
-  val person: SimpleChurchPeopleSearchIndividual,
-  val category: GivingCategory
-)
+  data class SimpleChurchBatchItemRaw(
+    val amount: BigDecimal,
+    val date: String,
+    val id: String,
+    val created: String,
+    val updated: String,
+    val person: SimpleChurchPeopleSearchIndividual,
+    val category: GivingCategory
+  )
+
   override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): SimpleChurchBatchItem {
     val root = p.readValueAs(SimpleChurchBatchItemRaw::class.java)
     return SimpleChurchBatchItem(
@@ -320,7 +320,7 @@ data class GivingCategory(
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class LoginSession(val session_id: String)
 
-data class LoginResponse (
+data class LoginResponse(
   val success: Boolean,
   val statusCode: Int,
   val data: LoginSession?,

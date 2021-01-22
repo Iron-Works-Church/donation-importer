@@ -8,7 +8,8 @@ import java.time.format.DateTimeFormatter
 
 class SimpleChurchDonationImporter(
   private val simpleChurchServiceFactory: SimpleChurchServiceFactory,
-  private val snsTopicArn: String) {
+  private val snsTopicArn: String
+) {
   fun importDonations(newDonations: Collection<Donation>): ImportReport {
     val chargesByBatch = newDonations
       .filterNot { it.isEndOfYearDonation() }
@@ -25,9 +26,9 @@ class SimpleChurchDonationImporter(
   * Donations at the end of one year or beginning of the next are at risk of getting miscategorized, so we will just
   * skip these and let the staff take care of them manually.
   */
-  private fun Donation.isEndOfYearDonation() : Boolean {
+  private fun Donation.isEndOfYearDonation(): Boolean {
     return (date.month == Month.DECEMBER && date.dayOfMonth >= 20) ||
-            (date.month == Month.JANUARY && date.dayOfMonth <= 20)
+      (date.month == Month.JANUARY && date.dayOfMonth <= 20)
   }
 
   data class ImportReport(

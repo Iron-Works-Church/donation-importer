@@ -3,7 +3,7 @@ package org.ironworkschurch.tithely
 import java.math.BigDecimal
 import java.time.LocalDate
 
-class TransactionResolver (
+class TransactionResolver(
   private val simpleChurchServiceFactory: SimpleChurchServiceFactory,
   private val donorLookup: DonorLookup,
   private val givingCategories: Map<String, String>,
@@ -13,7 +13,7 @@ class TransactionResolver (
   internal fun resolveImportedDonations(depositedCharges: Sequence<Charge>): List<Donation> {
     val transactionsInRange = getTransactionsInRange(depositedCharges)
       .associateBy {
-        TransactionLookupKey (
+        TransactionLookupKey(
           it.date,
           it.amount.setScale(2),
           it.person.uid,
@@ -37,8 +37,7 @@ class TransactionResolver (
       .flatMap { it.entries }
   }
 
-
-  data class TransactionLookupKey (
+  data class TransactionLookupKey(
     val date: LocalDate,
     val amount: BigDecimal,
     val donorId: Int,

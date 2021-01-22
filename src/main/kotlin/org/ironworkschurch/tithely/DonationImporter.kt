@@ -48,7 +48,7 @@ fun buildSimpleChurchServiceFactory(): SimpleChurchServiceFactory {
 }
 
 private fun buildTithelyService(): TithelyService {
-  return with (getTithelyProperties()) {
+  return with(getTithelyProperties()) {
     TithelyService(baseUrl, userName, password, organizationName)
   }
 }
@@ -79,14 +79,14 @@ private fun getAmazonProperties(): AmazonProperties {
   )
 }
 
-data class TithelyProperties (
+data class TithelyProperties(
   val baseUrl: String,
   val userName: String,
   val password: String,
   val organizationName: String
 )
 
-data class SimpleChurchProperties (
+data class SimpleChurchProperties(
   val baseUrl: String,
   val userName: String,
   val password: String

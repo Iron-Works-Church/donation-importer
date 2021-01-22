@@ -45,7 +45,7 @@ data class Organization(
 )
 
 @JsonDeserialize(using = ChargeDeserializer::class)
-data class Charge (
+data class Charge(
   val chargeId: String,
   val amount: BigDecimal,
   val currency: String,
@@ -58,7 +58,7 @@ data class Charge (
 
 internal class ChargeDeserializer : JsonDeserializer<Charge>() {
   @JsonIgnoreProperties(ignoreUnknown = true)
-  data class ChargeRaw (
+  data class ChargeRaw(
     @JsonProperty("charge_id") val chargeId: String,
     @JsonProperty("amount") val amount: Long,
     @JsonProperty("currency") val currency: String,
@@ -72,7 +72,7 @@ internal class ChargeDeserializer : JsonDeserializer<Charge>() {
   override fun deserialize(jp: JsonParser, ctxt: DeserializationContext): Charge {
     val root = jp.readValueAs(ChargeRaw::class.java)
 
-    return Charge (
+    return Charge(
       chargeId = root.chargeId,
       amount = root.amount.toBigDecimal().movePointLeft(2),
       currency = root.currency,
